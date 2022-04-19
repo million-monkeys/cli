@@ -1,0 +1,26 @@
+# Graphics settings
+[graphics]
+    # Resolution can be: "720p", "1080p", "1440p", "4k" or any combination of "<width>x<height>", eg "640x480"
+    resolution = "720p"
+    fullscreen = false
+    vsync      = false
+    fov        = 60
+    resizable  = false
+    debug      = false  # Only in debug builds
+
+# Metrics, profiling and logging
+[telemetry]
+    # trace, debug, info, warn, error, off. Both trace and debug are only available in debug builds.
+    logging   = "info"
+    profiling = true
+
+# Where to find the game files
+[game]
+    data = [
+        "game.data",
+        "{{project_name}}.data",
+        "game/",
+        "{{project_name}}/",
+        "mods/",
+        ".",
+    ]

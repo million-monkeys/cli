@@ -1,0 +1,32 @@
+[metadata.info]
+    name        = "Player"
+    description = "Player character template"
+
+[metadata.data]
+    position      = { x = 0, y = 0, z = 0 }
+    physics-shape = { type = "sphere", data = [0, 0, 1] }
+
+[position]
+    x = "=> position.x"
+    y = "=> position.y"
+    z = "=> position.z"
+
+[velocity]
+
+[actor]
+
+["physics/rigid-body"]
+    mass  = 80
+    shape = "=> physics-shape"
+
+[time-aware]
+    scale = 1
+
+[scripted-behavior]
+    script = "scripts/player.lua"
+    [scripted-behavior.events]
+        "entity/on-create"          = "on_create"
+        "actions/player/move-up"    = "on_move_up"
+        "actions/player/move-down"  = "on_move_down"
+        "actions/player/move-left"  = "on_move_left"
+        "actions/player/move-right" = "on_move_right"

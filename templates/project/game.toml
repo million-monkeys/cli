@@ -1,0 +1,22 @@
+[game]
+    user-mods   = "mods/"
+    start-scene = "default"
+
+[memory.events]
+    per-thread-pool-size = 96
+
+[physics]
+    target-framerate = 30
+    max-substeps     = 10
+    gravity          = { y = -9.81 }
+
+
+[attributes.movement]
+    # Pixels per second
+    speed = 32
+
+[[module]]
+    path     = "modules/"
+    name     = "game"
+    enabled  = true
+    required = true

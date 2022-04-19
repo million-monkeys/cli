@@ -1,0 +1,5 @@
+[[event-map]]
+    script = "scripts/run.lua"
+    [event-map.events]
+        "game/on-load"   = "on_game_enter"
+        "scene/on-enter" = "on_scene_enter"

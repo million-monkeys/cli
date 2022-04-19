@@ -1,0 +1,25 @@
+[package]
+    name        = "million-monkeys-cli"
+    version     = "0.1.0"
+    authors     = ["danielytics <danielytics@users.noreply.github.com>"]
+    edition     = "2021"
+    description = "Million Monkeys project management utility"
+
+[[bin]]
+    name = "mm"
+    path = "src/main.rs"
+
+[dependencies]
+    toml_edit    = "0.14.2"
+    regex        = "1.5.5"
+    maplit       = "1.0.2"
+    phf          = { version = "0.10.1", features = ["macros"] }
+    colored      = "2"
+    clap         = { version = "3.1.8", features = ["derive", "cargo"] }
+    liquid       = "0.26"
+    rust-embed   = "6.3.0"
+    serde        = "1.0.136"
+    strum        = "0.24"
+    strum_macros = "0.24"
+    case_style   = "0.2.1"
+    multimap     = "0.8.3"
