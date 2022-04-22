@@ -1,6 +1,7 @@
 [game]
-    user-mods   = "mods/"
-    start-scene = "default"
+    user-mods     = "mods/"
+    start-scene   = "default"
+    script-events = "build/events.lua"
 
 [memory.events]
     per-thread-pool-size = 96

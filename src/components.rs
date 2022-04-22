@@ -1,5 +1,6 @@
 use crate::utils::*;
 use case_style::CaseStyle;
+use colored::*;
 use multimap::MultiMap;
 use phf::phf_map;
 use std::collections::{HashMap, HashSet};
@@ -411,7 +412,7 @@ fn generate_components<'a>(
 
 fn generate_component_name_pair(namespace: &str, name: &str) -> String {
     format!(
-        "\t[\"{0}{1}{2}\"] = \"struct Component_{3}_{4}*\",",
+        "\t['{0}{1}{2}'] = 'struct Component_{3}_{4}*',",
         namespace,
         if namespace == "" { "" } else { "/" },
         name,
@@ -471,7 +472,10 @@ pub fn generate(source: &str, generate_what: GeneratorType, output_dir: &str) {
             let components_code =
                 generate_components(&DATA_TYPES_LUA, &mut foreign_types, &components, false);
             let component_map = generate_component_map(&components);
-            println!("Outputting Lua definition to: {}.lua", output_file);
+            println!(
+                "Outputting Lua definition to: {}",
+                format!("{}.lua", output_file).blue()
+            );
             make_file(
                 &format!("{}.lua", output_file),
                 "components.lua",
@@ -484,7 +488,10 @@ pub fn generate(source: &str, generate_what: GeneratorType, output_dir: &str) {
         GeneratorType::HeaderFile => {
             let components_code =
                 generate_components(&DATA_TYPES_CPP, &mut foreign_types, &components, true);
-            println!("Outputting C++ header file to: {}.hpp", output_file);
+            println!(
+                "Outputting C++ header file to: {}",
+                format!("{}.hpp", output_file).blue()
+            );
             make_file(
                 &format!("{}.hpp", output_file),
                 "components.hpp",
@@ -496,7 +503,10 @@ pub fn generate(source: &str, generate_what: GeneratorType, output_dir: &str) {
             );
         }
         GeneratorType::CppDefinitions => {
-            println!("Outputting C++ definition to: {}.cpp", output_file);
+            println!(
+                "Outputting C++ definition to: {}",
+                format!("{}.cpp", output_file).blue()
+            );
             make_file(
                 &format!("{}.cpp", output_file),
                 "components.cpp",
