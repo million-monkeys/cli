@@ -66,6 +66,9 @@ enum ProjectCommands {
         /// Choose engine build
         #[clap(short, long, arg_enum)]
         build: Option<project::RunBuild>,
+        /// Choose log level
+        #[clap(short, long, arg_enum)]
+        loglevel: Option<project::LogLevel>,
     },
     /// Create a release package for a project
     Release,
@@ -106,9 +109,11 @@ fn main() {
             ProjectCommands::Create => project::create(name),
             ProjectCommands::Build { builddir } => project::build(name, builddir),
             ProjectCommands::Dev => project::dev(name),
-            ProjectCommands::Run { build } => {
-                project::run(name, &build.unwrap_or(project::RunBuild::Release))
-            }
+            ProjectCommands::Run { build, loglevel } => project::run(
+                name,
+                &build.unwrap_or(project::RunBuild::Release),
+                &loglevel,
+            ),
             ProjectCommands::Release => project::release(name),
         },
         Commands::Dev {} => println!("NOT IMPLEMENTED: dev"),

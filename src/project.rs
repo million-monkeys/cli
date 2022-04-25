@@ -12,6 +12,17 @@ pub enum RunBuild {
     Debug,
 }
 
+#[derive(Display, Copy, Clone, ArgEnum)]
+pub enum LogLevel {
+    Off,
+    Crticial,
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace,
+}
+
 pub fn create(project: &str) {
     let project_dir = get_project_dir(project);
 
@@ -112,27 +123,43 @@ pub fn build(project: &str, builddir: &Option<String>) {
 
 pub fn dev(project: &str) {}
 
-fn _run(root_dir: &str, project_dir: &str, binary: &str) -> io::Result<bool> {
+fn _run(root_dir: &str, project_dir: &str, binary: &str, log_level: &LogLevel) -> io::Result<bool> {
     println!("Running {}", binary.blue());
     let output = Command::new(binary)
         .args(["-g", &format!("{}/engine/src/lua/engine", root_dir)])
         .args(["-g", project_dir])
         .args(["--init", &format!("{}/config.toml", project_dir)])
-        .args(["-l", "debug"])
+        .args([
+            "-l",
+            match log_level {
+                LogLevel::Trace => "trace",
+                LogLevel::Debug => "debug",
+                LogLevel::Info => "info",
+                LogLevel::Warn => "warn",
+                LogLevel::Error => "error",
+                LogLevel::Crticial => "crticial",
+                LogLevel::Off => "off",
+            },
+        ])
         .spawn()?;
     Ok(true)
 }
 
-pub fn run(project: &str, engine_build: &RunBuild) {
+pub fn run(project: &str, engine_build: &RunBuild, log_level: &Option<LogLevel>) {
     let binary = match engine_build {
         RunBuild::Debug => "game-debug",
         RunBuild::Release => "game-release",
     };
+    let log_level = log_level.unwrap_or(match engine_build {
+        RunBuild::Debug => LogLevel::Debug,
+        RunBuild::Release => LogLevel::Info,
+    });
     if is_root_dir() {
         _run(
             ".",
             &format!("projects/{}", project),
             &format!("engine/{}", binary),
+            &log_level,
         )
         .expect("Failed to execute");
     } else {
@@ -140,6 +167,7 @@ pub fn run(project: &str, engine_build: &RunBuild) {
             "../..",
             &format!("../../projects/{}/", project),
             &format!("../../engine/{}", binary),
+            &log_level,
         )
         .expect("Failed to execute");
     };
