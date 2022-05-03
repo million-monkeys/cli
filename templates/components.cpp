@@ -8,7 +8,7 @@ using namespace entt::literals;
 
 namespace init_{{name}} {
 
-    void register_components (monkeys::api::Engine* engine)
+    void register_components (million::api::internal::ModuleManager* engine)
     {
 {{components}}
     }

@@ -1,2 +1,9 @@
-[DoorOpenerd]
+[door-opened]
     door = "entity"
+
+[test-event]
+    a = "int32"
+    b = "int32"
+
+[event-2]
+    x = "float"

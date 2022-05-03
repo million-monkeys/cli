@@ -1,16 +1,27 @@
 [game]
     user-mods     = "mods/"
-    start-scene   = "default"
+    initial-state = "default"
     script-events = "build/events.lua"
 
+[scenes]
+    path  = "scenes/"
+    initial = "default"
+
+# Set default size of event pools. All sizes in bytes.
 [memory.events]
-    per-thread-pool-size = 96
+    per-thread-pool-size = 1024
+    scripts-pool-size = 2048
+    per-stream-pool-size = 1024
+
+# Override specific stream sizes by name. All sizes in bytes.
+[memory.streams]
+    "commands"  = 512
+    "resources" = 512
 
 [physics]
     target-framerate = 30
     max-substeps     = 10
     gravity          = { y = -9.81 }
-
 
 [attributes.movement]
     # Pixels per second
