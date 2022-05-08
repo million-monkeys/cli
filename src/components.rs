@@ -41,8 +41,6 @@ static DATA_TYPES_CPP: Types = Types {
         "vec4" => "glm::vec4",
         "vec2" => "glm::vec2",
         "resource" => "million::resources::Handle",
-        "texture" => "million::resources::Handle",
-        "mesh" => "million::resources::Handle",
         "float" => "float",
         "double" => "double",
         "bool" => "bool",
@@ -73,8 +71,6 @@ static DATA_TYPES_LUA: Types = Types {
         "vec3" => "struct Vec3",
         "vec4" => "struct Vec4",
         "resource" => "uint32_t",
-        "texture" => "uint32_t",
-        "mesh" => "uint32_t",
         "float" => "float",
         "double" => "double",
         "bool" => "bool",
@@ -118,6 +114,13 @@ impl Types {
                     if include_specifier { "struct " } else { "" },
                     type_name
                 )
+            } else if data_type.starts_with("resource:") {
+                self.types.get("resource").unwrap().to_string()
+            } else if data_type == "resource" {
+                panic!(
+                    "Field \"{}\" is a \"resource\", but does not specify resource type",
+                    field_name
+                )
             } else {
                 self.types
                     .get(data_type)
@@ -137,6 +140,12 @@ impl Types {
 }
 
 fn gen_field(temp_vars: &mut Vec<String>, field_type: &str, field_name: &str) -> String {
+    let (field_type, value_type) = if let Some(index) = field_type.find(":") {
+        let (field_type, value_type) = field_type.split_at(index);
+        (field_type, value_type.strip_prefix(':').unwrap_or(""))
+    } else {
+        (field_type, "")
+    };
     match field_type {
         "hashed-string" => format!(
             "entt::hashed_string{{toml::find<std::string>(table, \"{}\").c_str()}}",
@@ -147,36 +156,43 @@ fn gen_field(temp_vars: &mut Vec<String>, field_type: &str, field_name: &str) ->
             field_name
         ),
         "resource" | "texture" | "mesh" => format!(
-            "engine->findResource(entt::hashed_string::value(toml::find<std::string>(table, \"{}\").c_str()))",
-            field_name
+            "engine->loadResource(\"{}\"_hs, toml::find<std::string>(table, \"{}\").c_str(), 0)",
+            value_type, field_name
         ),
         "vec2" => {
             temp_vars.push(format!("auto {0} = table.at(\"{0}\");", field_name));
             format!("glm::vec3{{float(toml::find<toml::floating>({0}, \"x\")), float(toml::find<toml::floating>({0}, \"y\"))}}", field_name)
-        },
+        }
         "vec3" => {
             temp_vars.push(format!("auto {0} = table.at(\"{0}\");", field_name));
             format!("glm::vec3{{float(toml::find<toml::floating>({0}, \"x\")), float(toml::find<toml::floating>({0}, \"y\")), float(toml::find<toml::floating>({0}, \"z\"))}}", field_name)
-        },
+        }
         "vec4" => {
             temp_vars.push(format!("auto {0} = table.at(\"{0}\");", field_name));
             format!("glm::vec3{{float(toml::find<toml::floating>({0}, \"x\")), float(toml::find<toml::floating>({0}, \"y\")), float(toml::find<toml::floating>({0}, \"z\")), float(toml::find<toml::floating>({0}, \"w\"))}}", field_name)
-        },
+        }
         "rgb" => {
             temp_vars.push(format!("auto {0} = table.at(\"{0}\");", field_name));
             format!("glm::vec3{{float(toml::find<toml::floating>({0}, \"r\")), float(toml::find<toml::floating>({0}, \"g\")), float(toml::find<toml::floating>({0}, \"b\"))}}", field_name)
-        },
+        }
         "rgba" => {
             temp_vars.push(format!("auto {0} = table.at(\"{0}\");", field_name));
             format!("glm::vec3{{float(toml::find<toml::floating>({0}, \"r\")), float(toml::find<toml::floating>({0}, \"g\")), float(toml::find<toml::floating>({0}, \"b\")), float(toml::find<toml::floating>({0}, \"a\"))}}", field_name)
-        },
-        type_name @ ("uint64" | "uint32" | "uint16" | "uint8" |
-        "int64" | "int32" | "int16" | "int8" |
-        "byte" | "flags8" | "flags16" | "flags32" | "flags64") => format!("{}(toml::find<toml::integer>(table, \"{}\"))", DATA_TYPES_CPP.types.get(type_name).unwrap(), field_name),
-        type_name @ ("float" | "double") => format!("{}(toml::find<toml::floating>(table, \"{}\"))", DATA_TYPES_CPP.types.get(type_name).unwrap(), field_name),
+        }
+        type_name @ ("uint64" | "uint32" | "uint16" | "uint8" | "int64" | "int32" | "int16"
+        | "int8" | "byte" | "flags8" | "flags16" | "flags32" | "flags64") => format!(
+            "{}(toml::find<toml::integer>(table, \"{}\"))",
+            DATA_TYPES_CPP.types.get(type_name).unwrap(),
+            field_name
+        ),
+        type_name @ ("float" | "double") => format!(
+            "{}(toml::find<toml::floating>(table, \"{}\"))",
+            DATA_TYPES_CPP.types.get(type_name).unwrap(),
+            field_name
+        ),
         "bool" => format!("bool(toml::find<toml::boolean>(table, \"{}\"))", field_name),
         type_name => {
-            if type_name.starts_with("ptr:") {
+            if type_name == "ptr" {
                 String::from("nullptr")
             } else {
                 format!("/* UNKNOWN: {} {} */", field_type, field_name)
@@ -197,7 +213,7 @@ fn generate_field_accessor(
             gen_field(
                 temp_vars,
                 field.get("type").unwrap().as_str().expect(&format!(
-                    "'type' property of field must be string: {}",
+                    "\"type\" property of field must be string: {}",
                     field_name
                 )),
                 field_name,
@@ -454,7 +470,7 @@ pub fn generate(source: &str, generate_what: GeneratorType, output_dir: &str) {
     let output_file = format!(
         "{}/{}",
         if output_dir.ends_with('/') {
-            output_dir.trim_right_matches('/')
+            output_dir.trim_end_matches('/')
         } else {
             output_dir
         },

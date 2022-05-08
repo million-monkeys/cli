@@ -126,7 +126,7 @@ pub fn dev(project: &str) {}
 fn _run(root_dir: &str, project_dir: &str, binary: &str, log_level: &LogLevel) -> io::Result<bool> {
     println!("Running {}", binary.blue());
     let output = Command::new(binary)
-        .args(["-g", &format!("{}/engine/src/lua/engine", root_dir)])
+        .args(["-g", &format!("{}/engine/src/lua", root_dir)])
         .args(["-g", project_dir])
         .args(["--init", &format!("{}/config.toml", project_dir)])
         .args([
